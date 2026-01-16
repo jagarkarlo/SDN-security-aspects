@@ -1,4 +1,3 @@
-
 <a name="top"></a>
 # SDN Security Aspects - Ryu Controller - Mininet
 
@@ -11,35 +10,35 @@ A practical implementation of security mechanisms in **Software-Defined Networki
 
 ---
 
-## ✨ Značajke
+## Značajke
 
-### 🔒 Access Control List (ACL)
+### Access Control List (ACL)
 - **Centralizirano provođenje sigurnosnih politika** na razini kontrolera
 - Layer-4 filtriranje (IP, protokol, port)
 - Dinamička instalacija DROP pravila za nedopušteni promet
 - Whitelist pristup (eksplicitno dopušteni tokovi)
 
-### 🛡️ DoS Zaštita
+### DoS Zaštita
 - **Real-time detekcija napada** na temelju broja novih flowova
 - Sliding window algoritam za praćenje aktivnosti
 - Automatska privremena blokada napadača
 - Konfigurirajući pragovi i trajanje blokade
 - Automatsko deblokiranje nakon isteka vremena
 
-### 🔄 L2 Learning Switch
+### L2 Learning Switch
 - Automatsko učenje MAC → port mapiranja
 - Dinamička instalacija forwarding pravila
 - Flood za nepoznate destinacije
 - Table-miss pravilo za rukovanje novim tokovima
 
-### 📊 OpenFlow Upravljanje
+### OpenFlow Upravljanje
 - Hierarchija prioriteta pravila (0-200)
 - Provjera i analiza instaliranih flowova
 - Automatsko čišćenje isteklih pravila
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### SDN Controller
 - **Python 3.8+** - Programski jezik
@@ -57,7 +56,7 @@ A practical implementation of security mechanisms in **Software-Defined Networki
 
 ---
 
-## 📦 Preduvjeti
+## Preduvjeti
 
 Provjerite da imate instalirano:
 
@@ -87,15 +86,15 @@ sudo apt install -y \
 
 ---
 
-## 🚀 Instalacija
+## Instalacija
 
-### 1️⃣ Kloniranje projekta
+### 1. Kloniranje projekta
 ```bash
 git clone https://github.com/jagarkarlo/SDN-security-aspects.git
 cd SDN-security-aspects
 ```
 
-### 2️⃣ Postavljanje Python okruženja
+### 2. Postavljanje Python okruženja
 ```bash
 # Kreiranje virtualnog okruženja
 python3 -m venv venv
@@ -111,7 +110,7 @@ pip install --upgrade pip
 pip install ryu eventlet
 ```
 
-### 3️⃣ Verifikacija instalacije
+### 3. Verifikacija instalacije
 ```bash
 # Provjera Ryu instalacije
 ryu --version
@@ -125,7 +124,7 @@ sudo ovs-vsctl --version
 
 ---
 
-## ▶️ Pokretanje aplikacije
+## Pokretanje aplikacije
 
 ### Pokretanje SDN kontrolera
 ```bash
@@ -180,7 +179,7 @@ mininet>
 
 ---
 
-## 🌐 Topologija
+## Topologija
 
 ```
         ┌──────────────────┐
@@ -208,9 +207,9 @@ mininet>
 
 ---
 
-## 🧪 Testiranje
+## Testiranje
 
-### Test 1️⃣: Osnovna povezivost
+### Test 1: Osnovna povezivost
 ```bash
 mininet> pingall
 ```
@@ -226,7 +225,7 @@ h3 -> h1 h2
 
 ---
 
-### Test 2️⃣: ACL - Blokirani promet (SSH na port 22)
+### Test 2: ACL - Blokirani promet (SSH na port 22)
 ```bash
 mininet> h1 hping3 -S -c 3 -p 22 10.0.0.2
 ```
@@ -251,7 +250,7 @@ priority=150,tcp,nw_src=10.0.0.1,nw_dst=10.0.0.2,tp_dst=22 actions=drop
 
 ---
 
-### Test 3️⃣: ACL - Dopušteni promet (HTTP na port 80)
+### Test 3: ACL - Dopušteni promet (HTTP na port 80)
 ```bash
 # Pokretanje HTTP servera na h2
 mininet> h2 python3 -m http.server 80 &
@@ -277,7 +276,7 @@ mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1 | grep "tp_dst=80"
 
 ---
 
-### Test 4️⃣: DoS simulacija
+### Test 4: DoS simulacija
 ```bash
 mininet> h3 bash src/tests/ddos_simulation.sh 10.0.0.2
 ```
@@ -322,7 +321,7 @@ priority=200,ip,nw_src=10.0.0.3 actions=drop
 
 ---
 
-### Test 5️⃣: Analiza OpenFlow pravila
+### Test 5: Analiza OpenFlow pravila
 
 ```bash
 mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1
@@ -356,7 +355,7 @@ cookie=0x0, duration=5.012s, table=0, n_packets=0, n_bytes=0,
 
 ---
 
-## 📊 Pregled testnih scenarija
+## Pregled testnih scenarija
 
 | Test | Protokol/Port | Očekivani rezultat | Status |
 |------|---------------|-------------------|--------|
@@ -369,7 +368,7 @@ cookie=0x0, duration=5.012s, table=0, n_packets=0, n_bytes=0,
 
 ---
 
-## 🧠 Implementacijski detalji
+## Implementacijski detalji
 
 ### ACL konfiguracija
 
@@ -456,7 +455,7 @@ self.add_flow(datapath, 200, match, actions, hard_timeout=30)
 
 ---
 
-## 🔧 Konfiguracija
+## Konfiguracija
 
 ### Promjena ACL pravila
 
@@ -496,7 +495,7 @@ BLOCK_DURATION = 15
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Problem: Kontroler se ne može povezati
 
@@ -601,7 +600,7 @@ sudo python3 src/mininet/topo_microseg.py
 
 ---
 
-## 📝 Struktura projekta
+## Struktura projekta
 
 ```
 SDN-security-aspects/
@@ -633,7 +632,7 @@ SDN-security-aspects/
 
 ---
 
-## 📚 Dokumentacija i reference
+## Dokumentacija i reference
 
 ### Korištene tehnologije
 - [Ryu SDN Framework](https://ryu.readthedocs.io/)
@@ -650,15 +649,6 @@ SDN-security-aspects/
 - [OpenFlow Tutorial](https://github.com/mininet)
 - [Mininet Walkthrough](http://mininet.org/walkthrough/)
   
----
-
-## 📞 Kontakt i podrška
-
-**Imate pitanja ili probleme?**
-
-- 🐛 [Prijavite bug](https://github.com/jagarkarlo/SDN-security-aspects/issues)
-- 💡 [Predložite feature](https://github.com/jagarkarlo/SDN-security-aspects/issues/new?labels=enhancement)
-
 ---
 
 <div align="center">
