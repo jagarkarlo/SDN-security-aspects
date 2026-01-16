@@ -1,5 +1,6 @@
-```markdown
-# SDN Security Aspects – Ryu Controller & Mininet
+
+<a name="top"></a>
+# SDN Security Aspects - Ryu Controller - Mininet
 
 A practical implementation of security mechanisms in **Software-Defined Networking (SDN)** using **Ryu OpenFlow Controller** and **Mininet** network emulation.
 
@@ -90,7 +91,7 @@ sudo apt install -y \
 
 ### 1️⃣ Kloniranje projekta
 ```bash
-git clone https://github.com/your-username/SDN-security-aspects.git
+git clone https://github.com/jagarkarlo/SDN-security-aspects.git
 cd SDN-security-aspects
 ```
 
@@ -626,9 +627,7 @@ SDN-security-aspects/
 │       └── ddos_simulation.sh        # DoS napad simulacija
 │
 ├── run_controller.py                 # Ryu launcher script
-├── requirements.txt                  # Python dependencies
 ├── .gitignore
-├── LICENSE
 └── README.md
 ```
 
@@ -645,55 +644,12 @@ SDN-security-aspects/
 ### Preporučena literatura
 - "Software Defined Networks: A Comprehensive Approach" - Paul Goransson
 - "SDN: Software Defined Networks" - Thomas D. Nadeau
-- ONF White Papers
 
 ### Korisni resursi
 - [Ryu Book](https://osrg.github.io/ryu-book/en/html/)
-- [OpenFlow Tutorial](https://github.com/mininet/openflow-tutorial)
+- [OpenFlow Tutorial](https://github.com/mininet)
 - [Mininet Walkthrough](http://mininet.org/walkthrough/)
-
----
-
-## 🚀 Buduća proširenja
-
-- [ ] **Stateful Firewall** – praćenje TCP stanja (SYN, ACK, FIN)
-- [ ] **VLAN segmentacija** – tenant izolacija
-- [ ] **Port Security** – MAC binding per port
-- [ ] **Machine Learning IDS** – anomaly detection
-- [ ] **REST API** – dinamička ACL konfiguracija
-- [ ] **Web GUI** – grafičko upravljanje
-- [ ] **Flow statistics** – real-time traffic dashboards
-- [ ] **Multi-controller** – HA setup s ONOS/ODL
-- [ ] **QoS policies** – bandwidth limiting
-- [ ] **Integration sa Snort** – DPI capabilities
-
----
-
-## 🤝 Doprinos projektu
-
-Doprinosi su dobrodošli! Slijedite ove korake:
-
-1. **Forkajte** projekt
-2. Kreirajte **feature branch**
-   ```bash
-   git checkout -b feature/NovaFunkcionalnost
-   ```
-3. **Commit** promjene
-   ```bash
-   git commit -m 'Dodana nova ACL funkcionalnost'
-   ```
-4. **Push** na branch
-   ```bash
-   git push origin feature/NovaFunkcionalnost
-   ```
-5. Otvorite **Pull Request**
-
-### Coding Standards
-- Python: PEP 8
-- Dokumentirajte sve funkcije docstrings
-- Dodajte testove za nove značajke
-- Provjerite lint: `pylint src/`
-
+  
 ---
 
 ## 📞 Kontakt i podrška
@@ -707,6 +663,6 @@ Doprinosi su dobrodošli! Slijedite ove korake:
 
 <div align="center">
 
-[⬆ Povratak na vrh](#sdn-security-aspects--ryu-controller--mininet)
+[⬆ Povratak na vrh](#top)
 
 </div>
