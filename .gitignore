@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+
+# OS
+.DS_Store
+
+# Mininet / OVS junk
+/tmp/*
+*.log
+
+# VS Code
+.vscode/
+
+# Python build
+build/
+dist/
+*.egg-info/
