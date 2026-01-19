@@ -4,19 +4,21 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Virtual environment
+# Virtual env
 venv/
-.env/
+.venv/
 
-# OS
+# OS/editor
 .DS_Store
+.vscode/
+.idea/
+
+# Runtime artifacts
+dashboard_data.json
 
 # Mininet / OVS junk
 /tmp/*
 *.log
-
-# VS Code
-.vscode/
 
 # Python build
 build/
