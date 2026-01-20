@@ -17,8 +17,8 @@ pip3 --version
 sudo mn --version
 sudo ovs-vsctl --version
 
-
 2) Instalacija paketa (Ubuntu/Debian)
+
 sudo apt update && sudo apt upgrade -y
 
 sudo apt install -y \
