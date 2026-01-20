@@ -257,38 +257,54 @@ mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1
 
 **Rezultat:** Lista instaliranih flow entries s različitim prioritetima (0, 50, 150).
 
----
-
 ## 📂 Struktura Projekta
 
 ```
-SDN-security-aspects/
+SDN-SECURITY-ASPECTS/
+│
+├── docs/
+│   ├── plan.md                       # Plan projekta
+│   ├── references.md                 # Reference i izvori
+│   ├── report.md                     # Izvještaj
+│   └── theory.md                     # Teorijska pozadina
+│
+├── implementation/
+│   ├── setup.md                      # Upute za postavljanje
+│   └── tests.md                      # Testni scenariji
+│
+├── results/
+│   ├── findings.md                   # Rezultati istraživanja
+│   ├── logs/                         # Log datoteke
+│   └── screenshots/                  # Snimci ekrana
 │
 ├── src/
 │   ├── controller/
+│   │   ├── __pycache__/
 │   │   ├── __init__.py
 │   │   └── sdn_security_app.py       # Glavni Ryu kontroler
-│   │
-│   ├── web/
-│   │   ├── __init__.py
-│   │   ├── dashboard_wsgi.py         # WSGI routes
-│   │   ├── store.py                  # Thread-safe metrics
-│   │   └── static/
-│   │       ├── index.html            # Dashboard UI
-│   │       ├── app.js                # Frontend logika
-│   │       └── styles.css            # Stilovi
 │   │
 │   ├── mininet/
 │   │   └── topo_microseg.py          # Mininet topologija
 │   │
-│   └── tests/
-│       ├── ddos_simulation.sh        # DDoS attack simulator
-│       └── run_ping_tests.sh         # Connectivity tests
+│   ├── tests/
+│   │   ├── ddos_simulation.sh        # DDoS attack simulator
+│   │   └── run_ping_tests.sh         # Connectivity tests
+│   │
+│   └── web/
+│       ├── __pycache__/
+│       ├── static/
+│       │   ├── app.js                # Frontend logika
+│       │   ├── index.html            # Dashboard UI
+│       │   └── styles.css            # Stilovi
+│       ├── __init__.py
+│       ├── dashboard_wsgi.py         # WSGI routes
+│       └── store.py                  # Thread-safe metrics
 │
-├── run_controller.py                 # Ryu launcher
+├── venv/                             # Python virtual environment
+├── .gitignore                        # Git ignore file
+├── README.md                         # Dokumentacija projekta
 ├── requirements.txt                  # Python dependencies
-├── .gitignore
-└── README.md
+└── run_controller.py                 # Ryu launcher
 ```
 
 ---
