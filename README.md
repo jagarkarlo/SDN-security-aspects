@@ -56,29 +56,29 @@ Praktična implementacija sigurnosnih mehanizama u **Software-Defined Networking
 ┌────────────────────────────────────────────────┐
 │            Web Dashboard (Port 8080)           │
 │         http://127.0.0.1:8080/dashboard        │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐       │
-│  │ KPI Cards│ │  Charts  │ │Event Log │       │
-│  └──────────┘ └──────────┘ └──────────┘       │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐        │
+│  │ KPI Cards│ │  Charts  │ │Event Log │        │
+│  └──────────┘ └──────────┘ └──────────┘        │
 └────────────────────┬───────────────────────────┘
                      │ REST API
                      │
 ┌────────────────────▼───────────────────────────┐
 │          Ryu SDN Controller (Port 6653)        │
-│    ┌────────┐  ┌──────────┐  ┌──────────┐     │
-│    │  ACL   │  │   DDoS   │  │    L2    │     │
-│    │ Engine │  │ Detector │  │ Learning │     │
-│    └────────┘  └──────────┘  └──────────┘     │
+│    ┌────────┐  ┌──────────┐  ┌──────────┐      │
+│    │  ACL   │  │   DDoS   │  │    L2    │      │
+│    │ Engine │  │ Detector │  │ Learning │      │
+│    └────────┘  └──────────┘  └──────────┘      │
 └────────────────────┬───────────────────────────┘
                      │ OpenFlow 1.3
                      │
 ┌────────────────────▼───────────────────────────┐
 │            Open vSwitch (s1)                   │
-└──────┬──────────────┬──────────────┬───────────┘
-       │              │              │
-   ┌───▼───┐      ┌───▼───┐      ┌───▼───┐
-   │  h1   │      │  h2   │      │  h3   │
-   │10.0.0.1│     │10.0.0.2│     │10.0.0.3│
-   └───────┘      └───────┘      └───────┘
+└───────┬──────────────┬───────────────┬─────────┘
+        │              │               │
+   ┌────▼───┐      ┌───▼────┐      ┌───▼────┐
+   │  h1    │      │  h2    │      │  h3    │
+   │10.0.0.1│      │10.0.0.2│      │10.0.0.3│
+   └────────┘      └────────┘      └────────┘
 ```
 
 **Komponente:**
@@ -354,9 +354,9 @@ sudo lsof -ti:8080 | xargs kill -9
 
 | Ime | Uloga | GitHub |
 |-----|-------|--------|
-| **Petar Filjak** | Testing & Documentation | [@pfiljak21]() |
+| **Petar Filjak** | Testing & Documentation | [@pfiljak21](https://github.com/pfiljak21) |
 | **Karlo Jagar** | Implementation  | [@jagarkarlo](https://github.com/jagarkarlo) |
-| **Fran Garafolić** | Testing & Documentation | [@fgarafoli21]() |
+| **Fran Garafolić** | Testing & Documentation | [@fgarafoli21](https://github.com/fgarafoli21) |
 
 **Kolegij:** Sigurnost informacijskih sustava  
 **Mentor:** 
