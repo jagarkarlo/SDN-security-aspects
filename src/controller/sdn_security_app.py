@@ -4,10 +4,15 @@ eventlet.monkey_patch()
 from collections import defaultdict, deque
 from typing import Deque, Dict, Tuple, Set
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
 from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cls
 from ryu.ofproto import ofproto_v1_3
+import time
 from ryu.lib import hub
 from ryu.lib.packet import packet, ethernet, ipv4, tcp, udp
 from ryu.app.wsgi import WSGIApplication
@@ -55,7 +60,7 @@ class SdnSecurityApp(app_manager.RyuApp):
             self.store.tick_1s()
 
     def ddos_flag(self, dst_ip: str, dst_port: int) -> bool:
-        now = hub.get_time()
+        now = time.time()
         dq = self._dst_ports[dst_ip]
         dq.append((now, dst_port))
 
