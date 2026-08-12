@@ -1,5 +1,11 @@
 # SDN Security Aspects
 
+[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Ryu](https://img.shields.io/badge/Ryu-SDN_Controller-1D7A8C)](https://ryu-sdn.org/)
+[![OpenFlow](https://img.shields.io/badge/OpenFlow-1.3-F58220)](https://opennetworking.org/software-defined-standards/specifications/)
+[![Mininet](https://img.shields.io/badge/Mininet-Network_Emulator-5B5EA6)](https://mininet.org/)
+[![Open vSwitch](https://img.shields.io/badge/Open_vSwitch-Data_Plane-2B6CB0)](https://www.openvswitch.org/)
+
 A Software-Defined Networking security lab built with a Ryu OpenFlow controller, a three-host Mininet topology, and a real-time web dashboard. The controller learns Layer 2 forwarding paths, blocks a configured SSH flow with an ACL rule, and flags rapid destination-port scanning as suspicious activity.
 
 ## Architecture
