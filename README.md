@@ -1,387 +1,187 @@
-<a name="top"></a>
-# SDN Security Aspects - Ryu Controller + Real-Time Dashboard
+# SDN Security Aspects
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
-[![Ryu](https://img.shields.io/badge/Ryu-SDN_Framework-green.svg)](https://ryu-sdn.org/)
-[![OpenFlow](https://img.shields.io/badge/OpenFlow-1.3-orange.svg)](https://www.opennetworking.org/)
-[![Mininet](https://img.shields.io/badge/Mininet-2.3+-red.svg)](http://mininet.org/)
+A Software-Defined Networking security lab built with a Ryu OpenFlow controller, a three-host Mininet topology, and a real-time web dashboard. The controller learns Layer 2 forwarding paths, blocks a configured SSH flow with an ACL rule, and flags rapid destination-port scanning as suspicious activity.
 
-Praktična implementacija sigurnosnih mehanizama u **Software-Defined Networking (SDN)** okruženju koristeći **Ryu OpenFlow kontroler**, **Mininet emulaciju mreže** i **integrirani web dashboard** za vizualizaciju sigurnosnih događaja u stvarnom vremenu.
+## Architecture
 
----
+```mermaid
+flowchart TB
+    Browser[Browser]
+    Dashboard[Dashboard and REST API<br/>127.0.0.1:8080]
+    Controller[Ryu Security Controller<br/>OpenFlow 1.3 listener: 6653]
+    Store[Thread-safe event and metric store]
+    Switch[Open vSwitch s1]
+    H1[h1<br/>10.0.0.1]
+    H2[h2<br/>10.0.0.2]
+    H3[h3<br/>10.0.0.3]
 
-## 📋 Sadržaj
-
-- [Ključne Značajke](#-ključne-značajke)
-- [Arhitektura](#-arhitektura)
-- [Instalacija](#-instalacija)
-- [Pokretanje](#-pokretanje)
-- [Testiranje](#-testiranje)
-- [Struktura Projekta](#-struktura-projekta)
-- [Tehnologije](#-tehnologije)
-
----
-
-## 🎯 Ključne Značajke
-
-### 🛡️ Sigurnosni Mehanizmi
-
-- **Access Control List (ACL)**
-  - Layer-4 filtriranje (IP, protokol, port)
-  - Dinamička instalacija DROP pravila
-  - Real-time blocking nedozvoljenog prometa
-
-- **DDoS Detekcija**
-  - Heuristička detekcija bazirana na port scanning ponašanju
-  - Sliding window algoritam (5s prozor, 40 portova prag)
-  - Real-time flagging sumnjivog prometa
-
-- **L2 Learning Switch**
-  - Automatsko MAC learning
-  - Dinamička instalacija forwarding pravila
-
-### 📊 Real-Time Dashboard
-
-- **Live Grafovi** (Canvas API, auto-refresh svaku sekundu)
-  - flows/sec, acl drops/sec, ddos flags/sec, allowed/sec
-- **KPI Kartice** - Ukupan broj događaja, ACL drops, DDoS flags, Allowed paketi
-- **Event Log** - Kronološki prikaz svih događaja (INFO/WARN/ERROR)
-- **REST API** - `/api/dashboard` endpoint
-
----
-
-## 🗃️ Arhitektura
-
-```
-┌────────────────────────────────────────────────┐
-│            Web Dashboard (Port 8080)           │
-│         http://127.0.0.1:8080/dashboard        │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐        │
-│  │ KPI Cards│ │  Charts  │ │Event Log │        │
-│  └──────────┘ └──────────┘ └──────────┘        │
-└────────────────────┬───────────────────────────┘
-                     │ REST API
-                     │
-┌────────────────────▼───────────────────────────┐
-│          Ryu SDN Controller (Port 6653)        │
-│    ┌────────┐  ┌──────────┐  ┌──────────┐      │
-│    │  ACL   │  │   DDoS   │  │    L2    │      │
-│    │ Engine │  │ Detector │  │ Learning │      │
-│    └────────┘  └──────────┘  └──────────┘      │
-└────────────────────┬───────────────────────────┘
-                     │ OpenFlow 1.3
-                     │
-┌────────────────────▼───────────────────────────┐
-│            Open vSwitch (s1)                   │
-└───────┬──────────────┬───────────────┬─────────┘
-        │              │               │
-   ┌────▼───┐      ┌───▼────┐      ┌───▼────┐
-   │  h1    │      │  h2    │      │  h3    │
-   │10.0.0.1│      │10.0.0.2│      │10.0.0.3│
-   └────────┘      └────────┘      └────────┘
+    Browser -->|GET /dashboard<br/>GET /api/dashboard| Dashboard
+    Dashboard --> Store
+    Controller --> Store
+    Controller <-->|OpenFlow 1.3| Switch
+    Switch --- H1
+    Switch --- H2
+    Switch --- H3
 ```
 
-**Komponente:**
-- **Ryu Controller** - SDN kontroler s ACL, DDoS detekcijom
-- **Mininet** - Emulacija mreže (3 hosta, 1 switch)
-- **Open vSwitch** - OpenFlow 1.3 switch
-- **Web Dashboard** - Real-time UI s grafovima
+The Ryu process serves the dashboard and REST API locally on port `8080`. Mininet starts an Open vSwitch instance that connects to the controller on port `6653`.
 
----
+## Security Behavior
 
-## 🚀 Instalacija
+```mermaid
+flowchart TD
+    Packet[Packet-In from switch] --> Learn[Learn source MAC address]
+    Learn --> IPv4{IPv4 packet?}
+    IPv4 -- No --> L2[Forward or flood at Layer 2]
+    IPv4 -- Yes --> ACL{Matches configured ACL?}
+    ACL -- Yes --> Drop[Install priority 150 drop flow<br/>Record ACL drop event]
+    ACL -- No --> Scan{Rapid unique destination ports<br/>within five seconds?}
+    Scan -- Yes --> Flag[Record DDoS warning event]
+    Scan -- No --> Forward
+    Flag --> Forward[Install priority 50 forwarding flow<br/>Forward packet]
+```
 
-### Preduvjeti
+| Capability | Implementation |
+| --- | --- |
+| Layer 2 switching | MAC learning with flood fallback for unknown destinations. |
+| ACL enforcement | Blocks TCP port `22` from `10.0.0.1` to `10.0.0.2` and installs a temporary priority-150 drop flow. |
+| DDoS heuristic | Flags 40 or more distinct destination ports for the same target within a five-second window. It records an event; it does not block traffic. |
+| Flow optimization | Installs temporary priority-50 IPv4 forwarding flows after normal packet handling. |
+| Dashboard | Live counters, time series, and recent events from `GET /api/dashboard`. |
 
-- Python 3.9+
-- pip 20.0+
-- Mininet 2.3+
+## Key Features
+
+- Ryu controller using OpenFlow 1.3
+- Mininet topology with three hosts and one Open vSwitch switch
+- ACL event logging and dynamic drop-flow installation
+- Port-scan/DDoS heuristic with a sliding time window
+- Local browser dashboard with Canvas-based charts and event log
+- Read-only dashboard API for counters, time series, and recent events
+
+## Repository Structure
+
+```text
+SDN-security-aspects/
+├── src/
+│   ├── controller/
+│   │   └── sdn_security_app.py  # Ryu controller, ACL, DDoS heuristic, L2 learning
+│   ├── mininet/
+│   │   └── topo_microseg.py     # h1/h2/h3 and Open vSwitch topology
+│   ├── tests/
+│   │   ├── ddos_simulation.sh   # Destination-port flood generator
+│   │   └── run_ping_tests.sh    # Connectivity helper
+│   └── web/
+│       ├── dashboard_wsgi.py    # Dashboard and REST routes
+│       ├── store.py             # Thread-safe metrics and events
+│       └── static/              # Browser UI assets
+├── docs/                        # Project plan, report, theory, and references
+├── implementation/              # Extended setup and test notes
+├── Screenshots/                 # Demonstration screenshots
+├── requirements.txt             # Python dependencies
+└── run_controller.py            # Ryu launcher and local port configuration
+```
+
+## Prerequisites
+
+- Linux environment with Python 3.9 or newer
+- Mininet 2.3 or newer
 - Open vSwitch 2.x
-- Git
+- `hping3` for the DDoS simulation
+- `curl` and `jq` for API inspection
 
-### Ubuntu/Debian Instalacija
+On Ubuntu or Debian:
 
 ```bash
-# Ažuriranje sustava
-sudo apt update && sudo apt upgrade -y
+sudo apt update
+sudo apt install -y python3 python3-pip python3-venv mininet openvswitch-switch hping3 curl jq
 
-# Instalacija paketa
-sudo apt install -y python3 python3-pip python3-venv mininet \
-    openvswitch-switch hping3 curl git net-tools
-
-# Kloniranje projekta
 git clone https://github.com/jagarkarlo/SDN-security-aspects.git
 cd SDN-security-aspects
-
-# Python virtualno okruženje
 python3 -m venv venv
 source venv/bin/activate
-
-# Instalacija Python dependencies
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Verifikacija
+Verify the local tools:
 
 ```bash
-ryu --version          # Očekivano: ryu x.x
-sudo mn --version      # Očekivano: 2.3.x
-sudo ovs-vsctl --version  # Očekivano: 2.x.x
+ryu --version
+sudo mn --version
+sudo ovs-vsctl --version
 ```
 
----
+## Quick Start
 
-## ▶️ Pokretanje
-
-Sustav se pokreće u **3 odvojena terminala**.
-
-### Terminal 1️⃣: Ryu Controller + Dashboard
+Run the controller and dashboard in one terminal:
 
 ```bash
-cd SDN-security-aspects
 source venv/bin/activate
-export EVENTLET_NO_GREENDNS=yes
 PYTHONPATH=. python run_controller.py
 ```
 
-**Očekivani output:**
-```
-loading app src.controller.sdn_security_app
-UI:  http://127.0.0.1:8080/dashboard
-API: http://127.0.0.1:8080/api/dashboard
-```
+Open `http://127.0.0.1:8080/dashboard` in a browser.
 
-**Otvori u browseru:** `http://127.0.0.1:8080/dashboard`
-
----
-
-### Terminal 2️⃣: Mininet Topologija
+Start the Mininet topology in a second terminal:
 
 ```bash
-cd SDN-security-aspects
 sudo python3 src/mininet/topo_microseg.py
 ```
 
-**Očekivani output:**
-```
-*** Starting controller
-*** Starting 1 switches
-[+] Topology started.
-mininet>
-```
-
----
-
-### Terminal 3️⃣: Monitoring (Opcionalno)
+Inspect dashboard data from a third terminal:
 
 ```bash
-watch -n 1 'curl -s http://127.0.0.1:8080/api/dashboard | jq ".counters"'
+curl -s http://127.0.0.1:8080/api/dashboard | jq
 ```
 
----
+## Validation Scenarios
 
-## 🧪 Testiranje
+Run these from the Mininet CLI after the controller and topology are running.
 
-### Test 1: Osnovna Povezivost
+| Scenario | Command | Expected result |
+| --- | --- | --- |
+| Basic connectivity | `pingall` | Hosts can exchange traffic and the dashboard flow counter increases. |
+| ACL enforcement | `h1 hping3 -S -c 3 -p 22 10.0.0.2` | SSH traffic is dropped; the ACL-drop counter and warning log increase. |
+| Allowed HTTP | `h2 python3 -m http.server 80 &` then `h1 wget -O - -T 3 http://10.0.0.2 \| head` | HTTP request succeeds and the allowed counter increases. |
+| DDoS heuristic | `h3 bash src/tests/ddos_simulation.sh 10.0.0.2` | The dashboard records DDoS warning events; traffic is flagged, not automatically blocked. |
+| Installed flows | `sh ovs-ofctl -O OpenFlow13 dump-flows s1` | Shows table-miss, forwarding, and any ACL drop entries. |
+
+Stop the DDoS simulation with `Ctrl+C`. Clean a previous Mininet session before restarting when needed:
 
 ```bash
-mininet> pingall
-```
-
-**Rezultat:** 100% success, grafovi na dashboardu rastu.
-
----
-
-### Test 2: ACL - Blokirani SSH Promet
-
-ACL pravilo blokira TCP port 22 između h1 → h2.
-
-```bash
-mininet> h1 hping3 -S -c 3 -p 22 10.0.0.2
-```
-
-**Rezultat:**
-- 100% packet loss
-- Dashboard: ACL drop counter raste
-- Event log: WARN - ACL DROP
-
----
-
-### Test 3: ACL - Dozvoljeni HTTP Promet
-
-```bash
-# Pokreni HTTP server na h2
-mininet> h2 python3 -m http.server 80 &
-
-# Test s h1
-mininet> h1 wget -O - -T 3 http://10.0.0.2 | head
-```
-
-**Rezultat:**
-- Uspješna konekcija
-- Dashboard: Allowed counter raste
-
----
-
-### Test 4: DDoS Simulacija
-
-```bash
-mininet> h3 bash src/tests/ddos_simulation.sh 10.0.0.2
-```
-
-**Rezultat:**
-- Dashboard: DDoS flag counter eksplozivno raste
-- Event log: Puno WARN - DDoS flagged događaja
-- Graf ddos flags/sec pokazuje veliki spike
-
-**Zaustavi:** Ctrl+C u Mininet CLI-ju
-
----
-
-### Test 5: REST API
-
-```bash
-curl http://127.0.0.1:8080/api/dashboard | jq
-```
-
-**Rezultat:** JSON response s counters, timeseries i last_events.
-
----
-
-### Test 6: OpenFlow Flows
-
-```bash
-mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1
-```
-
-**Rezultat:** Lista instaliranih flow entries s različitim prioritetima (0, 50, 150).
-
-## 📂 Struktura Projekta
-
-```
-SDN-SECURITY-ASPECTS/
-│
-├── docs/
-│   ├── plan.md                       # Plan projekta
-│   ├── references.md                 # Reference i izvori
-│   ├── report.md                     # Izvještaj
-│   └── theory.md                     # Teorijska pozadina
-│
-├── implementation/
-│   ├── setup.md                      # Upute za postavljanje
-│   └── tests.md                      # Testni scenariji
-│
-├── results/
-│   ├── findings.md                   # Rezultati istraživanja
-│   ├── logs/                         # Log datoteke
-│   └── screenshots/                  # Snimci ekrana
-│
-├── src/
-│   ├── controller/
-│   │   ├── __pycache__/
-│   │   ├── __init__.py
-│   │   └── sdn_security_app.py       # Glavni Ryu kontroler
-│   │
-│   ├── mininet/
-│   │   └── topo_microseg.py          # Mininet topologija
-│   │
-│   ├── tests/
-│   │   ├── ddos_simulation.sh        # DDoS attack simulator
-│   │   └── run_ping_tests.sh         # Connectivity tests
-│   │
-│   └── web/
-│       ├── __pycache__/
-│       ├── static/
-│       │   ├── app.js                # Frontend logika
-│       │   ├── index.html            # Dashboard UI
-│       │   └── styles.css            # Stilovi
-│       ├── __init__.py
-│       ├── dashboard_wsgi.py         # WSGI routes
-│       └── store.py                  # Thread-safe metrics
-│
-├── venv/                             # Python virtual environment
-├── .gitignore                        # Git ignore file
-├── README.md                         # Dokumentacija projekta
-├── requirements.txt                  # Python dependencies
-└── run_controller.py                 # Ryu launcher
-```
-
----
-
-## 🛠 Tehnologije
-
-| Komponenta | Tehnologija | Verzija | Svrha |
-|------------|-------------|---------|-------|
-| **SDN Kontroler** | Ryu | Latest | OpenFlow kontroler |
-| **OpenFlow** | OpenFlow | 1.3 | Switch ↔ Controller protokol |
-| **Mrežna Emulacija** | Mininet | 2.3+ | Virtualna mreža |
-| **Virtual Switch** | Open vSwitch | 2.x | OpenFlow switch |
-| **Backend** | Python | 3.9+ | Logika kontrolera |
-| **Web Server** | Ryu WSGI | Built-in | HTTP server |
-| **Frontend** | Vanilla JS | ES6 | Dashboard |
-| **Charts** | Canvas API | Native | Grafovi |
-| **Threading** | threading | Built-in | Thread-safe store |
-
----
-
-## 🔧 Troubleshooting
-
-### Dashboard ne prikazuje podatke
-
-```bash
-# Provjera je li Ryu pokrenut
-ps aux | grep ryu
-
-# Provjera API-ja
-curl http://127.0.0.1:8080/api/dashboard
-
-# Restart kontrolera
-pkill -f run_controller.py
-PYTHONPATH=. python run_controller.py
-```
-
-### Mininet ne može pokrenuti topologiju
-
-```bash
-# Očisti stare procese
 sudo mn -c
-
-# Restart Open vSwitch
-sudo service openvswitch-switch restart
-
-# Ponovno pokreni
-sudo python3 src/mininet/topo_microseg.py
 ```
 
-### Port 6653 ili 8080 zauzet
+## Dashboard API
 
-```bash
-# Nađi i zaustavi proces
-sudo lsof -ti:6653 | xargs kill -9
-sudo lsof -ti:8080 | xargs kill -9
-```
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /dashboard` | Serves the browser dashboard. |
+| `GET /api/dashboard` | Returns counters, time series, and recent events as JSON. |
+| `GET /static/<file>` | Serves dashboard assets. |
 
----
+The dashboard binds to `127.0.0.1`, keeping this laboratory UI local to the host.
 
-## 👥 Autori
+## Technology Stack
 
-**Fakultet organizacije i informatike, Varaždin**
+| Area | Technology |
+| --- | --- |
+| SDN controller | Ryu, Python |
+| Data plane | OpenFlow 1.3, Open vSwitch |
+| Network emulation | Mininet |
+| Dashboard | Ryu WSGI, Vanilla JavaScript, Canvas API |
+| Test traffic | `ping`, `wget`, `hping3` |
 
-| Ime | Uloga | GitHub |
-|-----|-------|--------|
-| **Petar Filjak** | Testing & Documentation | [@pfiljak21](https://github.com/pfiljak21) |
-| **Karlo Jagar** | Implementation  | [@jagarkarlo](https://github.com/jagarkarlo) |
-| **Fran Garafolić** | Testing & Documentation | [@fgarafoli21](https://github.com/fgarafoli21) |
+## Contributors
 
-**Kolegij:** Sigurnost informacijskih sustava  
-**Mentor:** 
-**Akademska godina:** 2025/2026
+This was a university team project for the Information Systems Security course.
 
----
+| Contributor | Role |
+| --- | --- |
+| [Karlo Jagar](https://github.com/jagarkarlo) | Implementation |
+| [Petar Filjak](https://github.com/pfiljak21) | Testing and documentation |
+| [Fran Garafolić](https://github.com/fgarafoli21) | Testing and documentation |
 
-<div align="center">
+## License
 
-**[⬆ Povratak na vrh](#top)**
-
-</div>
+No license has been selected for this repository.
