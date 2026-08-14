@@ -1,8 +1,8 @@
 import eventlet
 eventlet.monkey_patch()
 
-from collections import defaultdict, deque
-from typing import Deque, Dict, Tuple, Set
+from collections import defaultdict
+from typing import Dict, Set, Tuple
 
 import sys
 import os
@@ -19,6 +19,7 @@ from ryu.app.wsgi import WSGIApplication
 
 from src.web.store import DashboardStore
 from src.web.dashboard_wsgi import DashboardWSGI
+from src.controller.port_scan import PortScanDetector
 
 
 class SdnSecurityApp(app_manager.RyuApp):
@@ -46,7 +47,9 @@ class SdnSecurityApp(app_manager.RyuApp):
         # DDoS heuristic:
         self.ddos_window_s = 5.0
         self.ddos_threshold_ports = 40
-        self._dst_ports: Dict[str, Deque[Tuple[float, int]]] = defaultdict(lambda: deque(maxlen=600))
+        self.port_scan_detector = PortScanDetector(
+            self.ddos_window_s, self.ddos_threshold_ports
+        )
 
         # tick loop: updated_at always moves
         hub.spawn(self._tick_loop)
@@ -60,15 +63,7 @@ class SdnSecurityApp(app_manager.RyuApp):
             self.store.tick_1s()
 
     def ddos_flag(self, dst_ip: str, dst_port: int) -> bool:
-        now = time.time()
-        dq = self._dst_ports[dst_ip]
-        dq.append((now, dst_port))
-
-        while dq and (now - dq[0][0]) > self.ddos_window_s:
-            dq.popleft()
-
-        uniq_ports = len({p for _, p in dq})
-        return uniq_ports >= self.ddos_threshold_ports
+        return self.port_scan_detector.flag(dst_ip, dst_port)
 
     def add_flow(self, dp, priority, match, actions, idle_timeout=30):
         ofp = dp.ofproto
@@ -168,8 +163,13 @@ class SdnSecurityApp(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(out_port)]
         self.store.inc_allowed()
 
-        # install a simple IP forward flow to reduce controller load
-        match = parser.OFPMatch(eth_type=0x0800, ipv4_src=src_ip, ipv4_dst=dst_ip)
+        # Keep transport flows port-specific so new ports still reach the DDoS heuristic.
+        match_fields = {"eth_type": 0x0800, "ipv4_src": src_ip, "ipv4_dst": dst_ip}
+        if proto == 6 and dst_port is not None:
+            match_fields.update(ip_proto=proto, tcp_dst=dst_port)
+        elif proto == 17 and dst_port is not None:
+            match_fields.update(ip_proto=proto, udp_dst=dst_port)
+        match = parser.OFPMatch(**match_fields)
         self.add_flow(dp, 50, match, actions, idle_timeout=30)
 
         dp.send_msg(parser.OFPPacketOut(
