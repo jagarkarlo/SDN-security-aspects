@@ -1,3 +1,2 @@
-ryu
-eventlet
-flask
+ryu==4.34
+eventlet==0.40.3

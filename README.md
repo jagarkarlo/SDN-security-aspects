@@ -89,7 +89,7 @@ SDN-security-aspects/
 
 ## Prerequisites
 
-- Linux environment with Python 3.9 or newer
+- Linux environment with Python 3.10
 - Mininet 2.3 or newer
 - Open vSwitch 2.x
 - `hping3` for the DDoS simulation
@@ -108,6 +108,9 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+> The Ryu dependency used by this lab has legacy packaging and is not compatible
+> with Python 3.12. Use Python 3.10 for the controller and Mininet validation.
 
 Verify the local tools:
 

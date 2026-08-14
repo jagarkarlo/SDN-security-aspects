@@ -5,14 +5,16 @@ Ovaj dokument opisuje kako instalirati potrebne alate i pokrenuti projekt:
 - Mininet topologiju (OVS switch + hostovi)
 - web dashboard (UI + API)
 
-> Preporučeno okruženje: Linux (Ubuntu/Debian) ili virtualna mašina.
+> Preporučeno okruženje: Linux (Ubuntu/Debian) ili virtualna mašina s Python 3.10.
+> Ryu 4.34 u ovom projektu ne instalira se na Python 3.12 zbog zastarjelog
+> pakiranja, zato za kontroler koristite Python 3.10.
 
 ---
 
 ## 1) Preduvjeti
 Provjerite:
 ```bash
-python3 --version
+python3.10 --version
 pip3 --version
 sudo mn --version
 sudo ovs-vsctl --version
@@ -22,7 +24,7 @@ sudo ovs-vsctl --version
 sudo apt update && sudo apt upgrade -y
 
 sudo apt install -y \
-  python3 python3-pip python3-venv \
+  python3.10 python3.10-venv python3-pip \
   mininet openvswitch-switch \
   curl net-tools hping3
 
@@ -31,14 +33,9 @@ git clone https://github.com/jagarkarlo/SDN-security-aspects.git
 cd SDN-security-aspects
 
 4) Virtualno okruženje
-python3 -m venv venv
+python3.10 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
-pip install ryu eventlet
-
-
-Ako postoji requirements.txt:
-
 pip install -r requirements.txt
 
 5) Pokretanje kontrolera
