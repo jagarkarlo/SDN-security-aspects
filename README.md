@@ -1,6 +1,6 @@
 # SDN Security Aspects
 
-[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Ryu](https://img.shields.io/badge/Ryu-SDN_Controller-1D7A8C)](https://ryu-sdn.org/)
 [![OpenFlow](https://img.shields.io/badge/OpenFlow-1.3-F58220)](https://opennetworking.org/software-defined-standards/specifications/)
 [![Mininet](https://img.shields.io/badge/Mininet-Network_Emulator-5B5EA6)](https://mininet.org/)
@@ -51,8 +51,8 @@ flowchart TD
 | --- | --- |
 | Layer 2 switching | MAC learning with flood fallback for unknown destinations. |
 | ACL enforcement | Blocks TCP port `22` from `10.0.0.1` to `10.0.0.2` and installs a temporary priority-150 drop flow. |
-| DDoS heuristic | Flags 40 or more distinct destination ports for the same target within a five-second window. It records an event; it does not block traffic. |
-| Flow optimization | Installs temporary priority-50 IPv4 forwarding flows after normal packet handling. |
+| DDoS heuristic | Flags 40 or more distinct destination ports for the same target within a five-second window. One warning is recorded per target until its window clears; traffic is not blocked. |
+| Flow optimization | Installs temporary priority-50 forwarding flows. TCP and UDP flows include the destination port so new probes continue to reach the detector. |
 | Dashboard | Live counters, time series, and recent events from `GET /api/dashboard`. |
 
 ## Key Features
@@ -70,7 +70,9 @@ flowchart TD
 SDN-security-aspects/
 ├── src/
 │   ├── controller/
-│   │   └── sdn_security_app.py  # Ryu controller, ACL, DDoS heuristic, L2 learning
+│   │   ├── flow_rules.py        # OpenFlow forwarding-match fields
+│   │   ├── port_scan.py         # Sliding-window port-scan detector
+│   │   └── sdn_security_app.py  # Ryu controller, ACL, L2 learning, dashboard wiring
 │   ├── mininet/
 │   │   └── topo_microseg.py     # h1/h2/h3 and Open vSwitch topology
 │   ├── tests/
@@ -83,6 +85,7 @@ SDN-security-aspects/
 ├── docs/                        # Project plan, report, theory, and references
 ├── implementation/              # Extended setup and test notes
 ├── Screenshots/                 # Demonstration screenshots
+├── test/                        # Dependency-free unit tests
 ├── requirements.txt             # Python dependencies
 └── run_controller.py            # Ryu launcher and local port configuration
 ```
@@ -99,11 +102,11 @@ On Ubuntu or Debian:
 
 ```bash
 sudo apt update
-sudo apt install -y python3 python3-pip python3-venv mininet openvswitch-switch hping3 curl jq
+sudo apt install -y python3.10 python3.10-venv python3-pip mininet openvswitch-switch hping3 curl jq
 
 git clone https://github.com/jagarkarlo/SDN-security-aspects.git
 cd SDN-security-aspects
-python3 -m venv venv
+python3.10 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
@@ -134,7 +137,7 @@ Open `http://127.0.0.1:8080/dashboard` in a browser.
 Start the Mininet topology in a second terminal:
 
 ```bash
-sudo python3 src/mininet/topo_microseg.py
+sudo python3.10 src/mininet/topo_microseg.py
 ```
 
 Inspect dashboard data from a third terminal:
@@ -152,7 +155,7 @@ Run these from the Mininet CLI after the controller and topology are running.
 | Basic connectivity | `pingall` | Hosts can exchange traffic and the dashboard flow counter increases. |
 | ACL enforcement | `h1 hping3 -S -c 3 -p 22 10.0.0.2` | SSH traffic is dropped; the ACL-drop counter and warning log increase. |
 | Allowed HTTP | `h2 python3 -m http.server 80 &` then `h1 wget -O - -T 3 http://10.0.0.2 \| head` | HTTP request succeeds and the allowed counter increases. |
-| DDoS heuristic | `h3 bash src/tests/ddos_simulation.sh 10.0.0.2` | The dashboard records DDoS warning events; traffic is flagged, not automatically blocked. |
+| DDoS heuristic | `h3 bash src/tests/ddos_simulation.sh 10.0.0.2` | The dashboard records one DDoS warning per target scan window; traffic is flagged, not automatically blocked. |
 | Installed flows | `sh ovs-ofctl -O OpenFlow13 dump-flows s1` | Shows table-miss, forwarding, and any ACL drop entries. |
 
 Stop the DDoS simulation with `Ctrl+C`. Clean a previous Mininet session before restarting when needed:
@@ -170,6 +173,21 @@ sudo mn -c
 | `GET /static/<file>` | Serves dashboard assets. |
 
 The dashboard binds to `127.0.0.1`, keeping this laboratory UI local to the host.
+
+## Automated Checks
+
+GitHub Actions runs dependency-free checks on every push and pull request:
+
+```bash
+python -m compileall -q run_controller.py src
+python -m unittest discover -s test -v
+bash -n src/tests/*.sh
+```
+
+The unit suite covers dashboard snapshots, the port-scan threshold and alert cooldown,
+and the TCP/UDP OpenFlow forwarding-match contract. It does not start the privileged
+Mininet/Open vSwitch lab; use the validation scenarios above on a Linux host with the
+listed prerequisites for that manual integration check.
 
 ## Technology Stack
 
