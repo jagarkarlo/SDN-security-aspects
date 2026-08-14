@@ -19,6 +19,7 @@ from ryu.app.wsgi import WSGIApplication
 
 from src.web.store import DashboardStore
 from src.web.dashboard_wsgi import DashboardWSGI
+from src.controller.flow_rules import forwarding_match_fields
 from src.controller.port_scan import PortScanDetector
 
 
@@ -164,12 +165,9 @@ class SdnSecurityApp(app_manager.RyuApp):
         self.store.inc_allowed()
 
         # Keep transport flows port-specific so new ports still reach the DDoS heuristic.
-        match_fields = {"eth_type": 0x0800, "ipv4_src": src_ip, "ipv4_dst": dst_ip}
-        if proto == 6 and dst_port is not None:
-            match_fields.update(ip_proto=proto, tcp_dst=dst_port)
-        elif proto == 17 and dst_port is not None:
-            match_fields.update(ip_proto=proto, udp_dst=dst_port)
-        match = parser.OFPMatch(**match_fields)
+        match = parser.OFPMatch(
+            **forwarding_match_fields(src_ip, dst_ip, proto, dst_port)
+        )
         self.add_flow(dp, 50, match, actions, idle_timeout=30)
 
         dp.send_msg(parser.OFPPacketOut(
