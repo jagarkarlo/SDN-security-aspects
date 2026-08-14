@@ -24,20 +24,22 @@ def start() -> None:
     net.addLink(h2, s1)
     net.addLink(h3, s1)
 
-    net.build()
-    c0.start()
-    s1.start([c0])
+    try:
+        net.build()
+        c0.start()
+        s1.start([c0])
 
-    info("\n[+] Topology started.\n")
-    info("[+] Now in Mininet CLI you can run:\n")
-    info("    pingall\n")
-    info("    h1 hping3 -S -c 3 -p 22 10.0.0.2   (should be DROPPED by ACL)\n")
-    info("    h2 python3 -m http.server 80 &\n")
-    info("    h1 wget -O - -T 3 http://10.0.0.2 | head\n")
-    info("    h3 bash src/tests/ddos_simulation.sh 10.0.0.2\n\n")
+        info("\n[+] Topology started.\n")
+        info("[+] Now in Mininet CLI you can run:\n")
+        info("    pingall\n")
+        info("    h1 hping3 -S -c 3 -p 22 10.0.0.2   (should be DROPPED by ACL)\n")
+        info("    h2 python3 -m http.server 80 &\n")
+        info("    h1 wget -O - -T 3 http://10.0.0.2 | head\n")
+        info("    h3 bash src/tests/ddos_simulation.sh 10.0.0.2\n\n")
 
-    CLI(net)
-    net.stop()
+        CLI(net)
+    finally:
+        net.stop()
 
 
 if __name__ == "__main__":
