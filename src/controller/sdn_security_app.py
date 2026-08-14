@@ -154,7 +154,7 @@ class SdnSecurityApp(app_manager.RyuApp):
             return
 
         # DDoS flag (heuristic only - doesn't block traffic here, just flags)
-        if dst_port is not None and proto in (6, 17) and self.ddos_flag(dst_ip, dst_port):
+        if dst_port is not None and proto in (6, 17) and self.port_scan_detector.should_alert(dst_ip, dst_port):
             self.store.inc_ddos_flag()
             self.store.log("WARN", "DDoS flagged", dst=dst_ip)
 

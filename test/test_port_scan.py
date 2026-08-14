@@ -32,6 +32,15 @@ class PortScanDetectorTest(unittest.TestCase):
         self.assertFalse(detector.flag("10.0.0.3", 1001, now=10))
         self.assertTrue(detector.flag("10.0.0.2", 1002, now=11))
 
+    def test_alerts_once_until_the_destination_window_clears(self):
+        detector = PortScanDetector(window_s=5, threshold_ports=2)
+
+        self.assertFalse(detector.should_alert("10.0.0.2", 1000, now=10))
+        self.assertTrue(detector.should_alert("10.0.0.2", 1001, now=11))
+        self.assertFalse(detector.should_alert("10.0.0.2", 1002, now=12))
+        self.assertFalse(detector.should_alert("10.0.0.2", 1003, now=18))
+        self.assertTrue(detector.should_alert("10.0.0.2", 1004, now=19))
+
 
 if __name__ == "__main__":
     unittest.main()

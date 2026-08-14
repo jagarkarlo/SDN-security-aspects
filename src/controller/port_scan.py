@@ -12,6 +12,7 @@ class PortScanDetector:
         self._dst_ports: Dict[str, Deque[Tuple[float, int]]] = defaultdict(
             lambda: deque(maxlen=600)
         )
+        self._alerted: Dict[str, bool] = defaultdict(bool)
 
     def flag(self, dst_ip: str, dst_port: int, now: float | None = None) -> bool:
         now = time.time() if now is None else now
@@ -21,4 +22,15 @@ class PortScanDetector:
         while ports and (now - ports[0][0]) > self.window_s:
             ports.popleft()
 
-        return len({port for _, port in ports}) >= self.threshold_ports
+        flagged = len({port for _, port in ports}) >= self.threshold_ports
+        if not flagged:
+            self._alerted[dst_ip] = False
+        return flagged
+
+    def should_alert(self, dst_ip: str, dst_port: int, now: float | None = None) -> bool:
+        if not self.flag(dst_ip, dst_port, now):
+            return False
+        if self._alerted[dst_ip]:
+            return False
+        self._alerted[dst_ip] = True
+        return True
