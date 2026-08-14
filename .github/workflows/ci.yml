@@ -25,5 +25,8 @@ jobs:
       - name: Compile Python source
         run: python -m compileall -q run_controller.py src
 
+      - name: Run dashboard store tests
+        run: python -m unittest discover -s test -v
+
       - name: Check shell script syntax
         run: bash -n src/tests/*.sh
