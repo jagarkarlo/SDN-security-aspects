@@ -1,0 +1,54 @@
+SDN Security Aspects Source-Available License
+=============================================
+
+Copyright (c) 2026 Karlo Jagar. All rights reserved.
+
+Scope
+-----
+
+This license applies to the original source files in this repository (the
+"Code").
+
+These terms make the Code source-available for evaluation. They are not an
+open-source license.
+
+Limited permission
+------------------
+
+You may download, clone, build, and run an unmodified copy of the Code solely
+for personal, non-commercial evaluation, portfolio review, or academic
+reference.
+
+Restrictions
+------------
+
+Without prior written permission from Karlo Jagar, you may not:
+
+- copy or reuse the Code, in whole or in part, except for the unmodified local
+        copy permitted above;
+- modify, adapt, translate, or create derivative works from the Code;
+- publish, redistribute, sublicense, sell, rent, or otherwise provide the Code
+        or a derivative work to another person;
+- use the Code or a derivative work for commercial, organizational,
+        production, or revenue-generating purposes;
+- remove or alter copyright, authorship, or license notices; or
+- claim or imply that you authored the Code or any substantial part of it.
+
+No patent, trademark, or other rights are granted. Any use not expressly
+permitted above requires prior written permission from Karlo Jagar.
+
+Content and third-party components
+----------------------------------
+
+This license does not grant rights to written content, images, logos,
+screenshots, or other non-code material in this repository. Third-party
+dependencies remain subject to their own license terms.
+
+Disclaimer
+----------
+
+THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING
+FROM THE CODE OR ITS USE.
