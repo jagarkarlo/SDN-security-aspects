@@ -5,6 +5,8 @@
   <img src="https://img.shields.io/badge/Ryu-1D7A8C?style=for-the-badge" alt="Ryu">
   <img src="https://img.shields.io/badge/OpenFlow-F58220?style=for-the-badge" alt="OpenFlow">
   <img src="https://img.shields.io/badge/Mininet-5B5EA6?style=for-the-badge" alt="Mininet">
+
+  <img src="https://img.shields.io/badge/License-Source_Available-D29922?style=for-the-badge" alt="License">
 </p>
 
 A Software-Defined Networking security lab built with a Ryu OpenFlow controller, a three-host Mininet topology, and a real-time web dashboard. The controller learns Layer 2 forwarding paths, blocks a configured SSH flow with an ACL rule, and flags rapid destination-port scanning as suspicious activity.
